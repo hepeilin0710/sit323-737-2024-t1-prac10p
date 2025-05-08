@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculator Service</title>
+</head>
+<body>
+    <h1>Cloud Calculator </h1>
+
+    <form id="calc-form">
+        <label>Number 1: <input type="number" id="num1" required /></label><br>
+        <label>Number 2: <input type="number" id="num2" /></label><br>
+        <label>Operation:
+            <select id="operation">
+                <option value="add">+</option>
+                <option value="subtract">-</option>
+                <option value="multiply">*</option>
+                <option value="divide">/</option>
+                <option value="power">^</option>
+                <option value="modulo">%</option>
+                <option value="sqrt">√ (num1 only)</option>
+            </select>
+        </label><br>
+        <button type="submit">Calculate</button>
+    </form>
+
+    <h2>Result: <span id="result">---</span></h2>
+    <p style="color: red;" id="error"></p>
+
+    <script>
+        const form = document.getElementById('calc-form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const num1 = parseFloat(document.getElementById('num1').value);
+            const num2 = parseFloat(document.getElementById('num2').value);
+            const operation = document.getElementById('operation').value;
+
+            const url = '/' + operation;
+            const body = operation === 'sqrt'
+                ? { num: num1 }
+                : { num1, num2 };
+
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    document.getElementById('error').textContent = data.error || 'Something went wrong';
+                    document.getElementById('result').textContent = '---';
+                } else {
+                    document.getElementById('error').textContent = '';
+                    document.getElementById('result').textContent = data.result;
+                }
+            } catch (err) {
+                document.getElementById('error').textContent = 'Network error';
+            }
+        });
+    </script>
+</body>
+</html>
